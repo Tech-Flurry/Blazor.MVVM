@@ -19,4 +19,12 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\Aqeel\source\repos\TechFlurry.Blazor.MVVM\TechFlurry.Blazor.MVVM\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\Aqeel\source\repos\TechFlurry.Blazor.MVVM\TechFlurry.Blazor.MVVM\.editorconfig" />
+  </ItemGroup>
+
 </Project>
