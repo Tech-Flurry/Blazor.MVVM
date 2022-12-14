@@ -18,8 +18,8 @@ csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 csharp_indent_labels = one_less_than_current
 insert_final_newline = true
-csharp_space_between_method_declaration_name_and_open_parenthesis = true
-csharp_space_between_method_call_name_and_opening_parenthesis = true
+csharp_space_between_method_declaration_name_and_open_parenthesis = false
+csharp_space_between_method_call_name_and_opening_parenthesis = false
 csharp_space_around_binary_operators = before_and_after
 csharp_space_between_empty_square_brackets = true
 csharp_style_throw_expression = false:suggestion
@@ -135,3 +135,6 @@ dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_event = false:suggestion
+
+# CS8604: Possible null reference argument.
+dotnet_diagnostic.CS8604.severity = silent

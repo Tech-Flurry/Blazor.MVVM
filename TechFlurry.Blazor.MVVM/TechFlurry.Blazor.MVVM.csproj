@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Utils\Attributes\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
