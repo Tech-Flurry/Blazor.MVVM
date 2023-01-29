@@ -40,7 +40,7 @@ namespace TechFlurry.Blazor.MVVM.ViewModels
         public abstract bool Equals(IViewModelBase? other);
         public override bool Equals(object? obj)
         {
-            return obj is IViewModelBase ? Equals(obj as IViewModelBase) : Equals(obj);
+            return obj is IViewModelBase ? Equals(obj as IViewModelBase) : base.Equals(obj);
         }
     }
 }
