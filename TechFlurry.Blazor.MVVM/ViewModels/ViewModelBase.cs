@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using TechFlurry.Blazor.MVVM.Infrastructure;
 
 namespace TechFlurry.Blazor.MVVM.ViewModels
 {
@@ -33,6 +34,7 @@ namespace TechFlurry.Blazor.MVVM.ViewModels
                 RaisePropertyChanged(memberName);
             }
         }
+
         public ValueTask DisposeAsync()
         {
             return ValueTask.CompletedTask;

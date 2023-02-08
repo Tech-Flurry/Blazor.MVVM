@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.ComponentModel;
 using System.Reflection;
+using TechFlurry.Blazor.MVVM.Infrastructure;
 using TechFlurry.Blazor.MVVM.ViewModels;
 
 namespace TechFlurry.Blazor.MVVM;
@@ -11,21 +14,35 @@ public static class Setup
         var viewModelInterfaces = Assembly.GetCallingAssembly()
                                             .GetTypes()
                                             .Where(t => t.IsInterface
-                                            && t.GetInterfaces().Any(x=>x.Name.Contains(nameof(IViewModelBase)))).ToList();
+                                            && t.GetInterfaces().Any(x => x.Name.Contains(nameof(IViewModelBase)))).ToList();
+
+
         foreach (var viewModelInterface in viewModelInterfaces)
         {
             //register the viewModelType with their respective implementation
             var implementableClass = viewModelInterface.GetImplementableClasses().FirstOrDefault();
             if (implementableClass is not null)
             {
-                services.AddTransient(viewModelInterface, implementableClass);
+                services.AddTransient(viewModelInterface, x =>
+                {
+                    // Resolve any dependencies of the ViewModel
+                    var requiredServices = implementableClass.GetConstructors().First().GetParameters();
+
+                    var dependencies = requiredServices.Select(p => x.GetService(p.ParameterType)).ToArray();
+
+                    // Create an instance of the ViewModel and return it
+
+                    var instance = dependencies.Any()
+                        ? Activator.CreateInstance(implementableClass, dependencies)
+                        : Activator.CreateInstance(implementableClass);
+
+                    return instance.CreateProxy(viewModelInterface);
+                });
+            }
+            else
+            {
+                viewModelInterfaces.Remove(viewModelInterface);
             }
         }
     }
-
-    internal static IEnumerable<Type> GetImplementableClasses(this Type viewModelType)
-    {
-        return AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes()).Where(p => viewModelType.IsAssignableFrom(p) && p.IsClass);
-    }
-
 }
