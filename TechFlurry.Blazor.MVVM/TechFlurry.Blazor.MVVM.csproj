@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Abstractions\" />
     <Folder Include="Utils\Attributes\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>

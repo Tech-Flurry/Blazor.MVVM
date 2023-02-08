@@ -15,11 +15,11 @@ internal class ViewModelInterceptor : IInterceptor
     public void Intercept(IInvocation invocation)
     {
         var property = invocation.Method.DeclaringType?.GetProperty(invocation.Method.Name[4..]);
-        var attrs = property.GetCustomAttributes(typeof(BroadcastStateAttribute), true);
+        var attrs = property?.GetCustomAttributes(typeof(BroadcastStateAttribute), true);
 
-        if (attrs.Length > 0)
+        if (attrs?.Length > 0)
         {
-            _viewModel.RaisePropertyChanged(property.Name);
+            _viewModel.RaisePropertyChanged(property?.Name);
         }
 
         invocation.Proceed();
