@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using System.ComponentModel;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using TechFlurry.Blazor.MVVM.Utils.Extensions;
 using TechFlurry.Blazor.MVVM.ViewModels;

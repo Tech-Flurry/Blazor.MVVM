@@ -1,9 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TechFlurry.Blazor.MVVM;
 using TechFlurry.Blazor.MVVM.ViewModels;
 
@@ -61,50 +56,5 @@ public class AddBlazorMVVMTests
                                                       && x.ServiceType.GetInterfaces()
                                                       .Any(y => y.Name.Contains(nameof(IViewModelBase)))).ToList();
         Assert.IsNotEmpty(registeredInterfaces);
-    }
-}
-
-public interface IViewModelA : IViewModelBase { }
-
-public class ViewModelA : ViewModelBase, IViewModelA
-{
-    public ViewModelA() : base() { }
-
-    public override bool Equals(IViewModelBase? other)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public interface IViewModelB : IViewModelBase { }
-
-public class ViewModelB : ViewModelBase, IViewModelB
-{
-    public ViewModelB() : base() { }
-
-    public override bool Equals(IViewModelBase? other)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public interface IViewModelC : IViewModelBase
-{
-    IViewModelA ViewModelA { get; }
-}
-
-public class ViewModelC : ViewModelBase, IViewModelC
-{
-
-    public ViewModelC(IViewModelA viewModelA)
-    {
-        ViewModelA = viewModelA;
-    }
-
-    public virtual IViewModelA ViewModelA { get; }
-
-    public override bool Equals(IViewModelBase? other)
-    {
-        throw new NotImplementedException();
     }
 }
