@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace TechFlurry.Blazor.MVVM.ViewModels
 {
-    public interface IViewModelBase : INotifyPropertyChanged, IDisposable, IAsyncDisposable, IEquatable<IViewModelBase>
+    public interface IViewModelBase : INotifyPropertyChanged, IDisposable, IAsyncDisposable
     {
     }
 
@@ -15,32 +15,18 @@ namespace TechFlurry.Blazor.MVVM.ViewModels
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        public void Dispose()
+        public virtual void Dispose()
         {
+            GC.SuppressFinalize(this);
             //Model.Dispose ();
         }
         //method to raise the PropertyChanged event
-        internal void RaisePropertyChanged([CallerMemberName] string propertyName = "")
+        internal void RaisePropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        public virtual ValueTask DisposeAsync()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        //method to assign the value to the property and raise the PropertyChanged event
-        protected void SetMember<T>(ref T storage, T value, [CallerMemberName] string memberName = null)
-        {
-            if (!EqualityComparer<T>.Default.Equals(storage, value))
-            {
-                storage = value;
-                RaisePropertyChanged(memberName);
-            }
-        }
-        public ValueTask DisposeAsync()
-        {
+            GC.SuppressFinalize(this);
             return ValueTask.CompletedTask;
-        }
-        public abstract bool Equals(IViewModelBase? other);
-        public override bool Equals(object? obj)
-        {
-            return obj is IViewModelBase ? Equals(obj as IViewModelBase) : base.Equals(obj);
         }
     }
 }
