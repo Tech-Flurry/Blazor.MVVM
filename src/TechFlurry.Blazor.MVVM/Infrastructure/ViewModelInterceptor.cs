@@ -12,17 +12,17 @@ internal class ViewModelInterceptor : IInterceptor
         _viewModel = viewModel;
     }
 
-    public void Intercept(IInvocation invocation)
+    public async void Intercept(IInvocation invocation)
     {
         invocation.Proceed();
         var property = invocation.Method.DeclaringType?.GetProperty(invocation.Method.Name[4..]);
-        if (property is not null)
+        if (property is not null && invocation.Method.Name.StartsWith("set_"))
         {
             var attrs = property?.GetCustomAttributes(typeof(BroadcastStateAttribute), true).Cast<BroadcastStateAttribute>();
 
             if (attrs.Any())
             {
-                _viewModel.RaisePropertyChanged(property?.Name);
+               await _viewModel.GetUpdateAsync(property?.Name);
             }
         }
         else

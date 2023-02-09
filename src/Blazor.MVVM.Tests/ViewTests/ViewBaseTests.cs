@@ -62,7 +62,7 @@ public class ViewBaseTests
         var viewModel = _viewBase.Instance.ViewModelContext;
         _viewBase.Instance.ViewRendered = false;
         // Act
-        viewModel.A = 15;
+        viewModel.ChangePropA(15);
 
         // Assert
         Assert.Multiple(() =>
