@@ -1,10 +1,6 @@
 ﻿using Blazor.MVVM.Tests.SetupTests;
 using Bunit;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using System.ComponentModel;
 using TechFlurry.Blazor.MVVM;
-using TechFlurry.Blazor.MVVM.ViewModels;
 using TechFlurry.Blazor.MVVM.Views;
 
 namespace Blazor.MVVM.Tests.ViewTests;
