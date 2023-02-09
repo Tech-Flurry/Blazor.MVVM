@@ -14,14 +14,28 @@ internal class ViewModelInterceptor : IInterceptor
 
     public void Intercept(IInvocation invocation)
     {
-        var property = invocation.Method.DeclaringType?.GetProperty(invocation.Method.Name[4..]);
-        var attrs = property?.GetCustomAttributes(typeof(BroadcastStateAttribute), true);
-
-        if (attrs?.Length > 0)
-        {
-            _viewModel.RaisePropertyChanged(property?.Name);
-        }
-
         invocation.Proceed();
+        var property = invocation.Method.DeclaringType?.GetProperty(invocation.Method.Name[4..]);
+        if (property is not null)
+        {
+            var attrs = property?.GetCustomAttributes(typeof(BroadcastStateAttribute), true).Cast<BroadcastStateAttribute>();
+
+            if (attrs.Any())
+            {
+                _viewModel.RaisePropertyChanged(property?.Name);
+            }
+        }
+        else
+        {
+            var method = invocation.Method.DeclaringType?.GetMethod(invocation.Method.Name);
+            var attrs = method?.GetCustomAttributes(typeof(BroadcastPropertyStateAttribute), true).Cast<BroadcastPropertyStateAttribute>();
+            if (attrs.Any())
+            {
+                foreach (var attr in attrs)
+                {
+                    _viewModel.RaisePropertyChanged(attr.PropertyName);
+                }
+            }
+        }
     }
 }
