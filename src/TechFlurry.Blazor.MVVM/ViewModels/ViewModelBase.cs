@@ -1,32 +1,30 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace TechFlurry.Blazor.MVVM.ViewModels
+namespace TechFlurry.Blazor.MVVM.ViewModels;
+
+public interface IViewModelBase : INotifyPropertyChanged, IDisposable, IAsyncDisposable
 {
-    public interface IViewModelBase : INotifyPropertyChanged, IDisposable, IAsyncDisposable
+}
+
+public abstract class ViewModelBase : IViewModelBase
+{
+    public ViewModelBase()
     {
     }
 
-    //implement disposable pattern and implement INotifyPropertyChanged and generic type to get the Model type and inject the Model type
-    public abstract class ViewModelBase : IViewModelBase
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public virtual void Dispose()
     {
-        public ViewModelBase()
-        {
-        }
+        GC.SuppressFinalize(this);
+    }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-        public virtual void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            //Model.Dispose ();
-        }
-        //method to raise the PropertyChanged event
-        internal void RaisePropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    internal protected void RaisePropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        public virtual ValueTask DisposeAsync()
-        {
-            GC.SuppressFinalize(this);
-            return ValueTask.CompletedTask;
-        }
+    internal protected abstract Task GetUpdateAsync(string propertyName);
+
+    public virtual async ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
     }
 }
