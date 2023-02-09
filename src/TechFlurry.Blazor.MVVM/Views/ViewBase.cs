@@ -19,11 +19,11 @@ public abstract class ViewBase<TViewModel> : ComponentBase, IDisposable, IAsyncD
         base.OnInitialized();
     }
 
-    protected virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs e) => StateHasChanged();
+    protected virtual async void OnPropertyChangedAsync(object sender, PropertyChangedEventArgs e) => await InvokeAsync(StateHasChanged);
 
-    protected virtual void BindEvents() => ViewModelContext.PropertyChanged += OnPropertyChanged;
+    protected virtual void BindEvents() => ViewModelContext.PropertyChanged += OnPropertyChangedAsync;
 
-    protected virtual void UnBindEvents() => ViewModelContext.PropertyChanged -= OnPropertyChanged;
+    protected virtual void UnBindEvents() => ViewModelContext.PropertyChanged -= OnPropertyChangedAsync;
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
