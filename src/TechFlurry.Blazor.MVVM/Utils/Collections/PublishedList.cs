@@ -33,9 +33,9 @@ public class PublishedList<T> : IList<T>, IList, INotifyCollectionChanged, INoti
         get => _items[index];
         set
         {
-            value.PropertyChanged += RaisePropertyChangedEvent;
+            value.PropertyChanged += PropertyHasChanged(index);
             _items[index] = value;
-            RaisePublishEvents(NotifyCollectionChangedAction.Add, "Index[]");
+            RaisePublishEvents(NotifyCollectionChangedAction.Add, _items[index], index, "Index[]");
         }
     }
     object? IList.this[int index]
@@ -58,22 +58,22 @@ public class PublishedList<T> : IList<T>, IList, INotifyCollectionChanged, INoti
 
     public void Add(T item)
     {
-        item.PropertyChanged += RaisePropertyChangedEvent;
+        item.PropertyChanged += PropertyHasChanged(_items.Count - 1);
         _items.Add(item);
-        RaisePublishEvents(NotifyCollectionChangedAction.Add, nameof(Count), "Index[]");
+        RaisePublishEvents(NotifyCollectionChangedAction.Add, item, _items.IndexOf(item), nameof(Count), "Index[]");
     }
     public void Clear()
     {
         UnBindEvents();
         _items.Clear();
-        RaisePublishEvents(NotifyCollectionChangedAction.Reset, nameof(Count), "Index[]");
+        RaiseResetPublishEvents(nameof(Count), "Index[]");
     }
     public bool Contains(T item) => _items.Contains(item);
 
     public void CopyTo(T[ ] array, int arrayIndex)
     {
         _items.CopyTo(array, arrayIndex);
-        RaisePublishEvents(NotifyCollectionChangedAction.Add, "Index[]");
+        RaisePublishEvents(NotifyCollectionChangedAction.Add, array[0], 0, "Index[]");
     }
     public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
 
@@ -83,17 +83,18 @@ public class PublishedList<T> : IList<T>, IList, INotifyCollectionChanged, INoti
         var previousItem = _items.ElementAtOrDefault(Index.FromStart(index));
         if (previousItem is not null)
         {
-            previousItem.PropertyChanged -= RaisePropertyChangedEvent;
+            previousItem.PropertyChanged -= PropertyHasChanged(index);
         }
-        item.PropertyChanged += RaisePropertyChangedEvent;
+        item.PropertyChanged += PropertyHasChanged(index);
         _items.Insert(index, item);
-        RaisePublishEvents(NotifyCollectionChangedAction.Add, "Index[]");
+        RaisePublishEvents(NotifyCollectionChangedAction.Add, item, index, "Index[]");
     }
     public bool Remove(T item)
     {
-        item.PropertyChanged += RaisePropertyChangedEvent;
+        var index = _items.IndexOf(item);
+        item.PropertyChanged += PropertyHasChanged(index);
         var result = _items.Remove(item);
-        RaisePublishEvents(NotifyCollectionChangedAction.Remove, nameof(Count), "Index[]");
+        RaisePublishEvents(NotifyCollectionChangedAction.Remove, item, index, nameof(Count), "Index[]");
         return result;
     }
 
@@ -102,10 +103,10 @@ public class PublishedList<T> : IList<T>, IList, INotifyCollectionChanged, INoti
         var currentItem = _items.ElementAtOrDefault(Index.FromStart(index));
         if (currentItem is not null)
         {
-            currentItem.PropertyChanged -= RaisePropertyChangedEvent;
+            currentItem.PropertyChanged -= PropertyHasChanged(index);
         }
         _items.RemoveAt(index);
-        RaisePublishEvents(NotifyCollectionChangedAction.Remove, nameof(Count), "Index[]");
+        RaisePublishEvents(NotifyCollectionChangedAction.Remove, currentItem, index, nameof(Count), "Index[]");
     }
     int IList.Add(object? value)
     {
@@ -118,7 +119,7 @@ public class PublishedList<T> : IList<T>, IList, INotifyCollectionChanged, INoti
     {
         var collection = _items as ICollection;
         collection.CopyTo(array, index);
-        RaisePublishEvents(NotifyCollectionChangedAction.Add, "Index[]");
+        RaisePublishEvents(NotifyCollectionChangedAction.Add, array.GetValue(0), 0, "Index[]");
     }
     IEnumerator IEnumerable.GetEnumerator()
     {
@@ -136,22 +137,35 @@ public class PublishedList<T> : IList<T>, IList, INotifyCollectionChanged, INoti
         GC.SuppressFinalize(this);
     }
 
-    private void RaisePublishEvents(NotifyCollectionChangedAction action, params string[ ] propertyNames)
+    public static PublishedList<T> GeneratePublishedList<TCollection>(IEnumerable<TCollection> collection, Func<TCollection, T> map) => new(collection.Select(map));
+
+    private void RaisePublishEvents(NotifyCollectionChangedAction action, object item, int index, params string[ ] propertyNames)
     {
-        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action));
+        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action, item, index));
         foreach (var propertyName in propertyNames)
-            RaisePropertyChangedEvent(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private void RaisePropertyChangedEvent(object sender, PropertyChangedEventArgs e) => PropertyChanged?.Invoke(sender, e);
+    private void RaiseResetPublishEvents(params string[ ] propertyNames)
+    {
+        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        foreach (var propertyName in propertyNames)
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private void RaisePropertyChangedEvent(object sender, string proppertyName, int index) => PropertyChanged?.Invoke(sender, new PropertyChangedEventArgs($"{nameof(T)}[{index}].{proppertyName}"));
+    private PropertyChangedEventHandler PropertyHasChanged(int index) => (sender, e) => RaisePropertyChangedEvent(sender, e.PropertyName, index);
 
     private void BindEvents()
     {
-        _items.ForEach(x => x.PropertyChanged += RaisePropertyChangedEvent);
+        foreach (var item in _items.Select((x, i) => (x, i)))
+            item.x.PropertyChanged += PropertyHasChanged(item.i);
     }
+
     private void UnBindEvents()
     {
-        _items.ForEach(x => x.PropertyChanged -= RaisePropertyChangedEvent);
+        foreach (var item in _items.Select((x, i) => (x, i)))
+            item.x.PropertyChanged -= PropertyHasChanged(item.i);
     }
 
     protected virtual void Dispose(bool disposing)
